@@ -6,8 +6,28 @@ import java.util.List;
 import java.util.Set;
 
 public class Board {
+    private class UndoMoveConstruct {
+
+        int endingPos;
+        List<PieceInterface> jumpedPieces;
+        List<Integer> jumpedPositions;
+        boolean originalKingStatus;
+        int startingPos;
+
+        public UndoMoveConstruct(int startingPos, int endingPos, boolean originalKingStatus,
+                List<Integer> jumpedPositions, List<PieceInterface> jumpedPieces) {
+            this.startingPos = startingPos;
+            this.endingPos = endingPos;
+            this.originalKingStatus = originalKingStatus;
+            this.jumpedPositions = jumpedPositions;
+            this.jumpedPieces = jumpedPieces;
+        }
+
+    }
+
     private List<Square> gameState;
     private int numberOfBlackPieces;
+
     private int numberOfWhitePieces;
 
     public Board() {
@@ -171,6 +191,33 @@ public class Board {
         return startingGameBoard;
     }
 
+    /**
+     * Precondition: Must be called before move to undo is actually made to the board.
+     *
+     * @param moveToUndo
+     * @return
+     */
+    public UndoMoveConstruct getUndoConstruct(MoveInterface moveToUndo) {
+        boolean originalKingStatus = moveToUndo.getPiece().isKing();
+
+        int startingPos = moveToUndo.getStartingPosition();
+        int endingPos = moveToUndo.getEndingPosition();
+
+        List<Integer> jumpedPositions = null;
+        List<PieceInterface> jumpedPieces = null;
+
+        if (moveToUndo instanceof SingleJump) {
+            SingleJump jumpToUndo = (SingleJump) moveToUndo;
+
+            // result of these two calls should make these arrays parallell
+            jumpedPositions = jumpToUndo.getJumpedPositions();
+            jumpedPieces = jumpToUndo.getJumpedPieces();
+        }
+
+        return new UndoMoveConstruct(startingPos, endingPos, originalKingStatus, jumpedPositions,
+                jumpedPieces);
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -210,6 +257,23 @@ public class Board {
 
     public void setOccupyingPiece(int position, PieceInterface pieceToSet) {
         this.getSquare(position).setOccupyingPiece(pieceToSet);
+    }
+
+    public void undoMove(UndoMoveConstruct undoObject) {
+
+        // put moving piece back
+        PieceInterface pieceToMove = this.pickUpPiece(undoObject.endingPos);
+        this.setOccupyingPiece(undoObject.startingPos, pieceToMove);
+
+        // reset king status
+        if (undoObject.originalKingStatus == false) {
+            pieceToMove.unKingMe();
+        }
+
+        // put pieces back
+        for (Integer position : undoObject.jumpedPositions) {
+            this.setOccupyingPiece(position, undoObject.jumpedPieces.get(position));
+        }
     }
 
 }

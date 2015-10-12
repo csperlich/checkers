@@ -14,4 +14,7 @@ public interface PieceInterface {
     public boolean isWhite();
 
     public void kingMe();
+
+    public void unKingMe();
+
 }

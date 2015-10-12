@@ -49,4 +49,8 @@ public final class NullPiece implements PieceInterface {
     public void kingMe() {
     }
 
+    @Override
+    public void unKingMe() {
+    }
+
 }
