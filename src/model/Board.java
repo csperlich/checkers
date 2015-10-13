@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Board {
-    private class UndoMoveConstruct {
+    class UndoMoveConstruct {
 
         int endingPos;
         List<PieceInterface> jumpedPieces;
@@ -27,7 +27,6 @@ public class Board {
 
     private List<Square> gameState;
     private int numberOfBlackPieces;
-
     private int numberOfWhitePieces;
 
     public Board() {
@@ -228,6 +227,14 @@ public class Board {
         return result;
     }
 
+    private void incrementPieceCount(int position) {
+        if (this.getPiece(position).isWhite()) {
+            this.numberOfWhitePieces++;
+        } else if (this.getPiece(position).isBlack()) {
+            this.numberOfBlackPieces++;
+        }
+    }
+
     public boolean isEndState() {
         return (this.numberOfBlackPieces == 0 || this.numberOfWhitePieces == 0);
     }
@@ -257,11 +264,14 @@ public class Board {
 
     public void setOccupyingPiece(int position, PieceInterface pieceToSet) {
         this.getSquare(position).setOccupyingPiece(pieceToSet);
+        this.incrementPieceCount(position);
     }
 
     public void undoMove(UndoMoveConstruct undoObject) {
 
         // put moving piece back
+        // this.incrementPieceCount(undoObject.endingPos);
+        System.out.println("here -> " + this.getNumberOfBlackPieces());
         PieceInterface pieceToMove = this.pickUpPiece(undoObject.endingPos);
         this.setOccupyingPiece(undoObject.startingPos, pieceToMove);
 
@@ -271,8 +281,12 @@ public class Board {
         }
 
         // put pieces back
+        if (undoObject.jumpedPositions == null) {
+            return;
+        }
         for (Integer position : undoObject.jumpedPositions) {
             this.setOccupyingPiece(position, undoObject.jumpedPieces.get(position));
+            this.incrementPieceCount(position);
         }
     }
 

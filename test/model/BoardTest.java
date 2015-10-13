@@ -151,6 +151,27 @@ public class BoardTest {
     }
 
     @Test
+    public void testGetUndoConstruct_andTestUndoMove() {
+        // create starting board
+        Board board1 = new Board();
+
+        // creat move and undoConstruct
+        Move move = new Move(11, 15, board1);
+        Board.UndoMoveConstruct undoConstruct = board1.getUndoConstruct(move);
+
+        // doMove
+        board1.movePiece(move);
+
+        // undoMove
+        board1.undoMove(undoConstruct);
+
+        // compare to original board
+        Board board2 = new Board();
+        assertEquals(board1, board2);
+
+    }
+
+    @Test
     public void testHashCode() {
         Board board1 = new Board();
         Board board2 = new Board();
